@@ -5,16 +5,14 @@ import 'package:http/http.dart' as http;
 
 import '../../../constants.dart';
 
-class Chart extends StatefulWidget {
-  final int orgId;
-
-  const Chart({required this.orgId});
+class SysChart extends StatefulWidget {
+  const SysChart();
 
   @override
-  _ChartState createState() => _ChartState();
+  _SysChartState createState() => _SysChartState();
 }
 
-class _ChartState extends State<Chart> {
+class _SysChartState extends State<SysChart> {
   int value = 0;
   List<PieChartSectionData> pieChartSelectionData = [];
   bool _isMounted = false; // Add a flag to track the mounted state
@@ -22,27 +20,29 @@ class _ChartState extends State<Chart> {
   @override
   void initState() {
     super.initState();
-        _isMounted = true; // Set the flag to false when the widget is disposed
+    _isMounted = true; // Set the flag to false when the widget is disposed
 
     fetchData();
   }
+
   @override
   void dispose() {
     _isMounted = false; // Set the flag to false when the widget is disposed
     super.dispose();
   }
+
   Future<void> fetchData() async {
     final liveResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getliveorg/${widget.orgId}'),
+      Uri.parse('http://192.168.93.1:3333/event/getlivecount'),
     );
     final futureResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getfutureorg/${widget.orgId}'),
+      Uri.parse('http://192.168.93.1:3333/event/getfuturecount'),
     );
     final pastResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getpastorg/${widget.orgId}'),
+      Uri.parse('http://192.168.93.1:3333/event/getpastcount'),
     );
     final countResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/count/${widget.orgId}'),
+      Uri.parse('http://192.168.93.1:3333/event/count'),
     );
     if (liveResponse.statusCode == 200 &&
         futureResponse.statusCode == 200 &&
@@ -69,12 +69,13 @@ class _ChartState extends State<Chart> {
               showTitle: false,
               radius: 19,
             ),
-            PieChartSectionData(
-              color: Color(0xFFEE2727),
-              value: liveData.toDouble(),
-              showTitle: false,
-              radius: 16,
-            ),
+              PieChartSectionData(
+                color: Color(0xFF26E5FF),
+                value: liveData.toDouble(),
+                showTitle: false,
+                radius: 22,
+              ),
+             
           ];
         });
       }
@@ -85,9 +86,9 @@ class _ChartState extends State<Chart> {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 200,
-      child:pieChartSelectionData.isEmpty?  Center(
+      child: pieChartSelectionData.isEmpty?  Center(
               child: CircularProgressIndicator(),
-            ) : Stack(
+            ):Stack(
         children: [
           PieChart(
             PieChartData(

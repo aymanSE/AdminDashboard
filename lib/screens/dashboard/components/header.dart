@@ -16,19 +16,15 @@ class Header extends StatelessWidget {
     return Row(
       children: [
         if (!Responsive.isDesktop(context))
-          IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: context.read<MenuAppController>().controlMenu,
-          ),
+        
         if (!Responsive.isMobile(context))
           Text(
-            "Dashboard",
+            "Admin Dashboard",
             style: Theme.of(context).textTheme.titleLarge,
           ),
         if (!Responsive.isMobile(context))
           Spacer(flex: Responsive.isDesktop(context) ? 2 : 1),
-        Expanded(child: SearchField()),
-        ProfileCard()
+        
       ],
     );
   }

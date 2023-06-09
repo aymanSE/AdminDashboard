@@ -1,25 +1,24 @@
 import 'dart:convert';
+import 'package:admin/screens/dashboard/components/sys_chart.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../../../constants.dart';
 import 'chart.dart';
 import 'storage_info_card.dart';
 
-class StorageDetails extends StatefulWidget {
-  final int orgId;
-
-  const StorageDetails({required this.orgId});
+class SysStorageDetails extends StatefulWidget {
+  const SysStorageDetails();
 
   @override
-  _StorageDetailsState createState() => _StorageDetailsState();
+  _SysStorageDetailsState createState() => _SysStorageDetailsState();
 }
 
-class _StorageDetailsState extends State<StorageDetails> {
-  int liveData = 0;
+class _SysStorageDetailsState extends State<SysStorageDetails> {
+  int liveData =0;
   int futureData = 0;
-  int pastData = 0;
+  int pastData =0;
   bool _isMounted = false; // Add a flag to track the mounted state
 
   @override
@@ -41,25 +40,25 @@ class _StorageDetailsState extends State<StorageDetails> {
     // Assign the received data to liveData, futureData, and pastData
 
     // Example API call using http package
-    final liveResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getliveorg/${widget.orgId}'),
-    );
-
-    final futureResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getfutureorg/${widget.orgId}'),
-    );
-
-    final pastResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getpastorg/${widget.orgId}'),
-    );
-
+       final liveResponse = await http.get(
+        Uri.parse('http://192.168.93.1:3333/event/getlivecount'),
+      );
+     
+       final futureResponse = await http.get(
+        Uri.parse('http://192.168.93.1:3333/event/getfuturecount'),
+      );
+     
+       final pastResponse = await http.get(
+        Uri.parse('http://192.168.93.1:3333/event/getpastcount'),
+      );
+    
     if (liveResponse.statusCode == 200 &&
         futureResponse.statusCode == 200 &&
         pastResponse.statusCode == 200) {
       final liveDataResponse = json.decode(liveResponse.body);
       final futureDataResponse = json.decode(futureResponse.body);
       final pastDataResponse = json.decode(pastResponse.body);
-
+     
       if (_isMounted) {
         setState(() {
           liveData = liveDataResponse;
@@ -89,13 +88,9 @@ class _StorageDetailsState extends State<StorageDetails> {
             ),
           ),
           SizedBox(height: defaultPadding),
-          Chart(orgId: widget.orgId),
-          StorageInfoCard(
-            svgSrc: "assets/icons/Documents.svg",
-            title: "Past",
-            amountOfFiles: pastData.toString(),
-            numOfFiles: 0,
-          ),
+          SysChart(),
+
+          
           StorageInfoCard(
             svgSrc: "assets/icons/media.svg",
             title: "Live",
@@ -103,9 +98,15 @@ class _StorageDetailsState extends State<StorageDetails> {
             numOfFiles: 0,
           ),
           StorageInfoCard(
+            svgSrc: "assets/icons/Documents.svg",
+            title: "Past",
+            amountOfFiles: pastData.toString(),
+            numOfFiles: 0,
+          ),
+          StorageInfoCard(
             svgSrc: "assets/icons/folder.svg",
             title: "Future",
-            amountOfFiles: futureData.toString(),
+            amountOfFiles:  futureData.toString(),
             numOfFiles: 0,
           ),
         ],

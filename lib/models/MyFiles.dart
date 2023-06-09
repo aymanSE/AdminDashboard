@@ -1,5 +1,7 @@
 import 'package:admin/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class CloudStorageInfo {
   final String? svgSrc, title, totalStorage;
@@ -16,37 +18,67 @@ class CloudStorageInfo {
   });
 }
 
-List demoMyFiles = [
-  CloudStorageInfo(
-    title: "Documents",
-    numOfFiles: 1328,
-    svgSrc: "assets/icons/Documents.svg",
-    totalStorage: "1.9GB",
-    color: primaryColor,
-    percentage: 35,
-  ),
-  CloudStorageInfo(
-    title: "Google Drive",
-    numOfFiles: 1328,
-    svgSrc: "assets/icons/google_drive.svg",
-    totalStorage: "2.9GB",
-    color: Color(0xFFFFA113),
-    percentage: 35,
-  ),
-  CloudStorageInfo(
-    title: "One Drive",
-    numOfFiles: 1328,
-    svgSrc: "assets/icons/one_drive.svg",
-    totalStorage: "1GB",
-    color: Color(0xFFA4CDFF),
-    percentage: 10,
-  ),
-  CloudStorageInfo(
-    title: "Documents",
-    numOfFiles: 5328,
-    svgSrc: "assets/icons/drop_box.svg",
-    totalStorage: "7.3GB",
-    color: Color(0xFF007EE5),
-    percentage: 78,
-  ),
-];
+class OrgDetails extends StatefulWidget {
+  final int orgId;
+  final String verified;
+
+  const OrgDetails({required this.orgId, required this.verified});
+
+  @override
+  _OrgDetailsState createState() => _OrgDetailsState();
+}
+
+class _OrgDetailsState extends State<OrgDetails> {
+  Future<List<CloudStorageInfo>> fetchData() async {
+    // Fetch total attendance from API
+    final attendanceResponse = await http.get(Uri.parse('http://172.28.205.102:3333/spot/totalattendance/${widget.orgId}'));
+    final attendanceData = jsonDecode(attendanceResponse.body);
+
+    // Fetch total views from API
+    final viewsResponse = await http.get(Uri.parse('http://172.28.205.102:3333/event/totalviews/${widget.orgId}'));
+    final viewsData = jsonDecode(viewsResponse.body);
+
+    // Create CloudStorageInfo objects
+    List<CloudStorageInfo> data = [
+      CloudStorageInfo(
+        title: "Attendance",
+        numOfFiles: attendanceData['totalAttendance'],
+        svgSrc: "assets/icons/users.svg",
+        totalStorage: "N/A",
+        color: primaryColor,
+        percentage: 0,
+      ),
+      
+      CloudStorageInfo(
+        title: "Views",
+        numOfFiles: viewsData.isNotEmpty ? viewsData[0]['views'] : 0,
+        svgSrc: "assets/icons/eye.svg",
+        totalStorage: "N/A",
+        color: Color(0xFFFFA113),
+        percentage: 0,
+      ),
+    ];
+
+    return data;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<List<CloudStorageInfo>>(
+      future: fetchData(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          List<CloudStorageInfo>? data = snapshot.data;
+          return Container(
+            // Your widget code here...
+          );
+        }
+      },
+    );
+  }
+   
+}

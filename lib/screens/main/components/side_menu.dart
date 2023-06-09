@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import '../../dashboard/SysDetails.dart';
+import '../../dashboard/components/reqrecent_files.dart';
+import '../../dashboard/dashboard_screen.dart';
+import '../../dashboard/reqdashboard_screen.dart';
+import '../main_screen.dart';
+
 class SideMenu extends StatelessWidget {
   const SideMenu({
     Key? key,
@@ -15,45 +21,51 @@ class SideMenu extends StatelessWidget {
             child: Image.asset("assets/images/logo.png"),
           ),
           DrawerListTile(
-            title: "Dashboard",
+            title: "Organizers List",
             svgSrc: "assets/icons/menu_dashboard.svg",
-            press: () {},
+            disabled:true,
+            press: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MainScreen(),
+                ),
+              );
+            },
           ),
           DrawerListTile(
-            title: "Transaction",
+            title: "Requests",
             svgSrc: "assets/icons/menu_tran.svg",
-            press: () {},
+            press: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return Dialog(
+                   backgroundColor: Colors.transparent,
+
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(0),
+                    ),
+                    child: Container(
+                      padding: EdgeInsets.zero,
+                      child: reqDashboardScreen(),
+                    ),
+                  );
+                },
+              );
+            },
           ),
           DrawerListTile(
-            title: "Task",
-            svgSrc: "assets/icons/menu_task.svg",
-            press: () {},
-          ),
-          DrawerListTile(
-            title: "Documents",
-            svgSrc: "assets/icons/menu_doc.svg",
-            press: () {},
-          ),
-          DrawerListTile(
-            title: "Store",
-            svgSrc: "assets/icons/menu_store.svg",
-            press: () {},
-          ),
-          DrawerListTile(
-            title: "Notification",
-            svgSrc: "assets/icons/menu_notification.svg",
-            press: () {},
-          ),
-          DrawerListTile(
-            title: "Profile",
-            svgSrc: "assets/icons/menu_profile.svg",
-            press: () {},
-          ),
-          DrawerListTile(
-            title: "Settings",
-            svgSrc: "assets/icons/menu_setting.svg",
-            press: () {},
-          ),
+              title: "General Statistics",
+              svgSrc: "assets/icons/menu_task.svg",
+              press: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Details(),
+                  ),
+                );
+              }),
         ],
       ),
     );
@@ -63,29 +75,37 @@ class SideMenu extends StatelessWidget {
 class DrawerListTile extends StatelessWidget {
   const DrawerListTile({
     Key? key,
-    // For selecting those three line once press "Command+D"
     required this.title,
     required this.svgSrc,
     required this.press,
+    this.disabled = false, // Add a disabled flag
   }) : super(key: key);
 
   final String title, svgSrc;
-  final VoidCallback press;
+  final VoidCallback? press;
+  final bool disabled; // Add a disabled flag
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      onTap: press,
+      onTap: disabled ? null : press, // Disable the onTap if disabled is true
       horizontalTitleGap: 0.0,
       leading: SvgPicture.asset(
         svgSrc,
-        colorFilter: ColorFilter.mode(Colors.white54, BlendMode.srcIn),
+        colorFilter: ColorFilter.mode(
+          disabled ? Colors.grey : Colors.white54, // Apply a different color when disabled
+          BlendMode.srcIn,
+        ),
         height: 16,
       ),
       title: Text(
         title,
-        style: TextStyle(color: Colors.white54),
+        style: TextStyle(
+          color: disabled ? Colors.grey : Colors.white54, // Apply a different color when disabled
+        ),
       ),
     );
   }
+
+
 }

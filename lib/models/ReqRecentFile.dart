@@ -1,18 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-class RecentFile {
+class ReqRecentFile {
   final String? ID, title, email, verified;
 
-  RecentFile({this.ID, this.title, this.email, this.verified});
+  ReqRecentFile({this.ID, this.title, this.email, this.verified});
 }
-List<RecentFile> demoRecentFiles = [];
+List<ReqRecentFile> reqdemoRecentFiles = [];
 
-Future<void> fetchData() async {
-  final response = await http.get(Uri.parse( 'http://192.168.8.120:3333/user/org')   );
+Future<void> reqfetchData() async {
+  final response = await http.get(Uri.parse( 'http://192.168.8.120:3333/user/req')   );
   if (response.statusCode == 200) {
     final List<dynamic> data = json.decode(response.body);
-    demoRecentFiles = data.map((item) {
-      return RecentFile(
+    reqdemoRecentFiles = data.map((item) {
+      return ReqRecentFile(
        
         ID: "${item['id']}",
         title: "${item['first_name']} ${item['last_name']}",
