@@ -5,12 +5,13 @@ import 'package:http/http.dart' as http;
  
 class ApiHelper {
   String domain = "192.168.1.104:3333"; 
-  
+
   Future get(String path) async {
     Uri uri = Uri.http(domain, path);
      var response = await http.get(uri);
     return responsing(response);
-  }
+ 
+   }
 
   Future post(String path, {body}) async {
     print(body.toString());
