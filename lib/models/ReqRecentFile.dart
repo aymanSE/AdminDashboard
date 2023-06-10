@@ -18,7 +18,7 @@ Future<void> reqfetchData() async {
         title: "${item['first_name']} ${item['last_name']}",
         // You can modify the date format as per your requirement
         email: item['email'],
-        verified : item['verified']==0?'true':'false',
+        verified : item['SID'].toString(),
       );
     }).toList();
   } else {

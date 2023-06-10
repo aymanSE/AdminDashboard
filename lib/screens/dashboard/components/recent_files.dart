@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server/gmail.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../constants.dart';
 import '../OrgDetails.dart';
+
 class RecentFiles extends StatefulWidget {
   const RecentFiles({Key? key}) : super(key: key);
 
@@ -21,6 +25,12 @@ class _RecentFilesState extends State<RecentFiles> {
     _fetchRecentFiles = fetchData();
   }
 
+  Future<void> refreshData() async {
+    setState(() {
+      _fetchRecentFiles = fetchData();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -32,9 +42,18 @@ class _RecentFilesState extends State<RecentFiles> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Organizers List",
-            style: Theme.of(context).textTheme.titleMedium,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Organizers List",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              IconButton(
+                icon: Icon(Icons.refresh),
+                onPressed: refreshData,
+              ),
+            ],
           ),
           SizedBox(height: defaultPadding),
           FutureBuilder<List<RecentFile>>(
@@ -63,7 +82,10 @@ class _RecentFilesState extends State<RecentFiles> {
                         label: Text("Email"),
                       ),
                       DataColumn(
-                        label: Text("Verified"),
+                        label: Text("SSN"),
+                      ),
+                      DataColumn(
+                        label: Text("Actions"),
                       ),
                     ],
                     rows: List.generate(recentFiles.length, (index) {
@@ -84,7 +106,8 @@ class _RecentFilesState extends State<RecentFiles> {
 }
 
 Future<List<RecentFile>> fetchData() async {
-  final response = await http.get(Uri.parse('http://192.168.8.120:3333/user/org'));
+  final response =
+      await http.get(Uri.parse('http://192.168.8.120:3333/user/org'));
   if (response.statusCode == 200) {
     final List<dynamic> data = json.decode(response.body);
     return data.map((item) {
@@ -92,32 +115,138 @@ Future<List<RecentFile>> fetchData() async {
         ID: "${item['id']}",
         title: "${item['first_name']} ${item['last_name']}",
         email: item['email'],
-        verified: item['verified'] == 0 ? 'true' : 'false',
+        verified: item['SID'].toString(),
       );
     }).toList();
   } else {
     throw Exception('Failed to fetch data');
   }
 }
-DataRow recentFileDataRow(RecentFile fileInfo,BuildContext context) {
+
+DataRow recentFileDataRow(RecentFile fileInfo, BuildContext context) {
+  void showConfirmationPopup(RecentFile fileInfo) {
+  TextEditingController emailContentController = TextEditingController();
+
+Future<void> sendEmail(String emailContent,String email) async {
+  final smtpServer = gmail('clustevents@gmail.com', 'ovqsvecbocresybx');
+
+  final message = Message()
+    ..from = Address('clustevents@gmail.com', 'Clust Events')
+    ..recipients.add(email)
+    ..subject = 'Account Deleted'
+    ..text = emailContent;
+
+  try {
+    final sendReport = await send(message, smtpServer);
+    print('Email sent: ${sendReport.toString()}');
+  } on MailerException catch (e) {
+    print('Sending email failed: ${e.toString()}');
+  }
+}
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Confirmation'),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Are you sure you want to delete this item?'),
+            SizedBox(height: defaultPadding),
+            Text('Reason'),
+            TextField(
+              controller: emailContentController,
+              decoration: InputDecoration(
+                hintText: 'Enter email content...',
+              ),
+              maxLines: 4,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.symmetric(
+                horizontal: defaultPadding * 1.5,
+                vertical: defaultPadding / 1,
+              ),
+              primary: Colors.red, // Set the button background color to red
+            ),
+            onPressed: () async {
+              Navigator.of(context).pop(); // Close the dialog
+              await deleteItem(fileInfo.ID!); // Delete the item
+              await sendEmail(emailContentController.text,fileInfo.email!); // Send the email
+            },
+            child: Text('Delete'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
   return DataRow(
     cells: [
       DataCell(
-        GestureDetector( onTap: () {
+        GestureDetector(
+          onTap: () {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => OrgDetails(orgId: int.parse( fileInfo.ID!), verified:fileInfo.verified!),
+                builder: (context) => OrgDetails(
+                  orgId: int.parse(fileInfo.ID!),
+                  orgName: fileInfo.title!,
+                ),
               ),
             );
           },
-          child: Text(fileInfo.ID!)),
+          child: Text(fileInfo.ID!),
+        ),
       ),
       DataCell(
         Text(fileInfo.title!),
       ),
       DataCell(Text(fileInfo.email!)),
       DataCell(Text(fileInfo.verified!)),
+      DataCell(
+        IconButton(
+          icon: Icon(Icons.close),
+          onPressed: () => showConfirmationPopup(fileInfo),
+        ),
+      ),
     ],
   );
+}
+
+Future<void> deleteItem(String id) async {
+  final response = await http.delete(
+    Uri.parse('http://192.168.8.120:3333/user/$id'),
+  );
+
+  // Handle the response as needed
+  // Call the callback function to update recent files
+}
+
+ 
+
+class RecentFile {
+  final String? ID;
+  final String? title;
+  final String? email;
+  final String? verified;
+
+  RecentFile({
+    this.ID,
+    this.title,
+    this.email,
+    this.verified,
+  });
 }

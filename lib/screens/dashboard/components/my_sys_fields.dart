@@ -20,6 +20,11 @@ class _MySysFilesState extends State<MySysFiles> {
   List<int> totalViews = [];
   int totalEvents = 0;
     bool _isMounted = false; // Add a flag to track the mounted state
+int  totalUsers=0;
+int  totalAttend=0;
+int  totalOrg=0;
+int  totalPend=0;
+
 
   @override
   void initState() {
@@ -43,7 +48,18 @@ class _MySysFilesState extends State<MySysFiles> {
     final eventsResponse = await http.get(
       Uri.parse('http://192.168.93.1:3333/event/count'),
     );
-
+    final usersResponse = await http.get(
+      Uri.parse('http://192.168.93.1:3333/user/count'),
+    );
+        final attendResponse = await http.get(
+      Uri.parse('http://192.168.93.1:3333/user/countAtten'),
+    );
+        final pendResponse = await http.get(
+      Uri.parse('http://192.168.93.1:3333/user/countPen'),
+    );
+         final orgResponse = await http.get(
+      Uri.parse('http://192.168.93.1:3333/user/countOrg'),
+    );
     if (attendanceResponse.statusCode == 200) {
       final attendanceData = json.decode(attendanceResponse.body);
       if (_isMounted) { // Check if the widget is still mounted before calling setState()
@@ -69,6 +85,38 @@ class _MySysFilesState extends State<MySysFiles> {
       if (_isMounted) { // Check if the widget is still mounted before calling setState()
         setState(() {
           totalEvents = eventsData;
+        });
+      }
+    }
+      if (usersResponse.statusCode == 200) {
+      final usersData = json.decode(usersResponse.body);
+      if (_isMounted) { // Check if the widget is still mounted before calling setState()
+        setState(() {
+          totalUsers = usersData;
+        });
+      }
+    }
+      if (attendResponse.statusCode == 200) {
+      final attendData = json.decode(attendResponse.body);
+      if (_isMounted) { // Check if the widget is still mounted before calling setState()
+        setState(() {
+          totalAttend = attendData;
+        });
+      }
+    }
+      if (orgResponse.statusCode == 200) {
+      final orgsData = json.decode(orgResponse.body);
+      if (_isMounted) { // Check if the widget is still mounted before calling setState()
+        setState(() {
+          totalOrg = orgsData;
+        });
+      }
+    }
+     if (pendResponse.statusCode == 200) {
+      final pendsData = json.decode(pendResponse.body);
+      if (_isMounted) { // Check if the widget is still mounted before calling setState()
+        setState(() {
+          totalPend = pendsData;
         });
       }
     }
@@ -100,6 +148,33 @@ class _MySysFilesState extends State<MySysFiles> {
       svgSrc: "assets/icons/calendar.svg",
       totalStorage: "",
       color: Color(0xFFA4CDFF),
+    ),
+        CloudStorageInfo(
+      title: "Total Users",
+      numOfFiles:totalUsers,
+      svgSrc: "assets/icons/user.svg",
+      totalStorage: "",
+      color: Color.fromARGB(255, 164, 255, 193),
+    ),
+        CloudStorageInfo(
+      title: "Total Attendees",
+      numOfFiles:totalAttend,
+      svgSrc: "assets/icons/user.svg",
+      totalStorage: "",
+      color: Color.fromARGB(255, 249, 164, 255),
+    ),
+        CloudStorageInfo(
+      title: "Total Organizers",
+      numOfFiles:totalOrg,
+      svgSrc: "assets/icons/user.svg",
+      totalStorage: "",
+      color: Color.fromARGB(255, 148, 153, 250),
+    ),  CloudStorageInfo(
+      title: "Total Pending",
+      numOfFiles:totalPend,
+      svgSrc: "assets/icons/user.svg",
+      totalStorage: "",
+      color: Color.fromARGB(255, 255, 110, 110),
     ),
   ];
     final Size _size = MediaQuery.of(context).size;
@@ -150,7 +225,7 @@ class FileInfoCardGridView extends StatelessWidget {
     return GridView.builder(
       physics: NeverScrollableScrollPhysics(),
       shrinkWrap: true,
-      itemCount: 3,
+      itemCount: 7,
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         crossAxisSpacing: defaultPadding,

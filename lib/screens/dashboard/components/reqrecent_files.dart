@@ -1,11 +1,13 @@
-import 'package:admin/models/RecentFile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server.dart';
 import '../../../constants.dart';
 import '../../../models/ReqRecentFile.dart';
 import '../OrgDetails.dart';
+
 class ReqRecentFiles extends StatefulWidget {
   const ReqRecentFiles({Key? key}) : super(key: key);
 
@@ -21,6 +23,8 @@ class _ReqRecentFilesState extends State<ReqRecentFiles> {
     super.initState();
     _fetchRecentFiles = reqFetchData();
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -64,12 +68,20 @@ class _ReqRecentFilesState extends State<ReqRecentFiles> {
                         label: Text("Email"),
                       ),
                       DataColumn(
+                        label: Text("SID"),
+                      ),
+                      DataColumn(
                         label: Text("Actions"),
                       ),
                     ],
                     rows: List.generate(recentFiles.length, (index) {
                       final fileInfo = recentFiles[index];
-                      return reqrecentFileDataRow(fileInfo, context);
+                      return reqrecentFileDataRow(fileInfo, context, () {
+                        // Callback function to update recent files when the button is clicked
+                        setState(() {
+                          _fetchRecentFiles = reqFetchData();
+                        });
+                      });
                     }),
                   ),
                 );
@@ -84,7 +96,8 @@ class _ReqRecentFilesState extends State<ReqRecentFiles> {
   }
 }
 
-DataRow reqrecentFileDataRow(ReqRecentFile fileInfo, BuildContext context) {
+DataRow reqrecentFileDataRow(
+    ReqRecentFile fileInfo, BuildContext context, VoidCallback onUpdate) {
   return DataRow(
     cells: [
       DataCell(
@@ -95,7 +108,6 @@ DataRow reqrecentFileDataRow(ReqRecentFile fileInfo, BuildContext context) {
               MaterialPageRoute(
                 builder: (context) => OrgDetails(
                   orgId: int.parse(fileInfo.ID!),
-                  verified: fileInfo.verified!,
                 ),
               ),
             );
@@ -107,6 +119,7 @@ DataRow reqrecentFileDataRow(ReqRecentFile fileInfo, BuildContext context) {
         Text(fileInfo.title!),
       ),
       DataCell(Text(fileInfo.email!)),
+      DataCell(Text(fileInfo.verified!)),
       DataCell(
         ElevatedButton.icon(
           style: ElevatedButton.styleFrom(
@@ -116,9 +129,17 @@ DataRow reqrecentFileDataRow(ReqRecentFile fileInfo, BuildContext context) {
             ),
           ),
           onPressed: () async {
-            final response = await http.put(Uri.parse(
-                'http://192.168.8.120:3333/user/verify/${fileInfo.ID}'));
-            // Handle the response as needed
+            final response = await http.put(
+                Uri.parse('http://192.168.8.120:3333/user/verify/${fileInfo.ID}'));
+            if (response.statusCode == 200) {
+              // Send email when the button is clicked
+              await sendEmail(fileInfo.email!);
+
+              // Call the callback function to update recent files
+              onUpdate();
+            } else {
+              print('Failed to approve');
+            }
           },
           icon: Icon(Icons.check),
           label: Text("Approve"),
@@ -127,6 +148,24 @@ DataRow reqrecentFileDataRow(ReqRecentFile fileInfo, BuildContext context) {
     ],
   );
 }
+
+Future<void> sendEmail(String email) async {
+    final smtpServer = gmail('clustevents@gmail.com', 'ovqsvecbocresybx');
+
+    final message = Message()
+      ..from = Address('clustevents@gmail.com', 'Clust Events')
+      ..recipients.add(email)
+      ..subject = 'Approval Notification'
+      ..text =
+          'Your request to become organizer has been approved. This message has been sent from the dashboard!';
+
+    try {
+      final sendReport = await send(message, smtpServer);
+      print('Email sent: ${sendReport.toString()}');
+    } on MailerException catch (e) {
+      print('Sending email failed: ${e.toString()}');
+    }
+  }
 
 Future<List<ReqRecentFile>> reqFetchData() async {
   final response = await http.get(Uri.parse('http://192.168.8.120:3333/user/req'));
@@ -137,7 +176,7 @@ Future<List<ReqRecentFile>> reqFetchData() async {
         ID: "${item['id']}",
         title: "${item['first_name']} ${item['last_name']}",
         email: item['email'],
-        verified: item['verified'] == 0 ? 'true' : 'false',
+        verified: item['SID'].toString(),
       );
     }).toList();
   } else {

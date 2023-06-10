@@ -3,37 +3,39 @@ import 'package:admin/screens/dashboard/components/my_fields.dart';
 import 'package:flutter/material.dart';
 
 import '../../constants.dart';
+import '../main/components/side_menu.dart';
+import 'components/eventList.dart';
 import 'components/header.dart';
-import 'components/orgeventList.dart';
+import 'components/my_sys_fields.dart';
 import 'components/recent_files.dart';
 import 'components/storage_details.dart';
+import 'components/sys_storage_details.dart';
 
-class OrgDetails extends StatefulWidget {
-  final int orgId;
-  final String orgName;
+class EventDetails extends StatefulWidget {
 
-  const OrgDetails({required this.orgId, this.orgName = ''});
+
+  const EventDetails();
 
   @override
-  _OrgDetailsState createState() => _OrgDetailsState();
+  _EventDetailsState createState() => _EventDetailsState();
 }
 
-class _OrgDetailsState extends State<OrgDetails> {
-  bool isVerified = false;
-  int id = 0;
-  String orgName = '';
+class _EventDetailsState extends State<EventDetails> {
+    bool isVerified = false;
+    int id = 0;
+
   @override
   void initState() {
     super.initState();
-    id = widget.orgId;
-    orgName = widget.orgName;
-  }
+   
 
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${orgName}\'s Details'),
+        title: Text('System Details'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -46,13 +48,12 @@ class _OrgDetailsState extends State<OrgDetails> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  
                   Expanded(
                     flex: 5,
                     child: Column(
                       children: [
-                        MyFiles(
-                          orgId: id,
-                        ),
+                        EventListScreen(),
                         SizedBox(height: defaultPadding),
                         //  RecentFiles(),
                         if (Responsive.isMobile(context))
@@ -66,12 +67,10 @@ class _OrgDetailsState extends State<OrgDetails> {
                   if (!Responsive.isMobile(context))
                     Expanded(
                       flex: 2,
-                      child: StorageDetails(
-                        orgId: id,
-                      ),
+                      child: SysStorageDetails(),
                     ),
                 ],
-              ),OrganizationDataScreen(organizationId: id,)
+              )
             ],
           ),
         ),

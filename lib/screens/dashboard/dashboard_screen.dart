@@ -30,6 +30,7 @@ class DashboardScreen extends StatelessWidget {
                      // MyFiles(),
                       SizedBox(height: defaultPadding),
                       RecentFiles(),
+                      
                     //  if (Responsive.isMobile(context))
                       //  SizedBox(height: defaultPadding),
                     //  if (Responsive.isMobile(context)) StorageDetails(),

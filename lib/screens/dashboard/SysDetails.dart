@@ -3,6 +3,7 @@ import 'package:admin/screens/dashboard/components/my_fields.dart';
 import 'package:flutter/material.dart';
 
 import '../../constants.dart';
+import 'components/eventList.dart';
 import 'components/header.dart';
 import 'components/my_sys_fields.dart';
 import 'components/recent_files.dart';
@@ -10,8 +11,6 @@ import 'components/storage_details.dart';
 import 'components/sys_storage_details.dart';
 
 class Details extends StatefulWidget {
-
-
   const Details();
 
   @override
@@ -19,16 +18,14 @@ class Details extends StatefulWidget {
 }
 
 class _DetailsState extends State<Details> {
-    bool isVerified = false;
-    int id = 0;
+  bool isVerified = false;
+  int id = 0;
 
   @override
   void initState() {
     super.initState();
-   
-
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,12 +43,10 @@ class _DetailsState extends State<Details> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  
                   Expanded(
                     flex: 5,
                     child: Column(
                       children: [
-                      
                         MySysFiles(),
                         SizedBox(height: defaultPadding),
                         //  RecentFiles(),
@@ -68,8 +63,9 @@ class _DetailsState extends State<Details> {
                       flex: 2,
                       child: SysStorageDetails(),
                     ),
+                 
                 ],
-              )
+              ), EventListScreen(),
             ],
           ),
         ),

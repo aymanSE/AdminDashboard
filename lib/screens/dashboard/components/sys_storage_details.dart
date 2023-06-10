@@ -31,7 +31,7 @@ class _SysStorageDetailsState extends State<SysStorageDetails> {
 
   @override
   void dispose() {
-    _isMounted = true; // Set the flag to false when the widget is disposed
+    _isMounted = false; // Set the flag to false when the widget is disposed
     super.dispose();
   }
 
