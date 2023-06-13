@@ -108,22 +108,38 @@ class _EventListScreenState extends State<EventListScreen> {
     );
   }
 }
-
 Future<List<Event>> fetchEvents() async {
   final response = await ApiHelper().get('/event/admin');
-  
-    final List<dynamic> data = response;
-    return data.map((item) {
-      final organizer = item['organizer'];
-      return Event(
-        id: item['id'],
-        name: item['name'],
-        status: item['status'],
-        organizerEmail: organizer['email'],
-      );
-    }).toList();
- 
+  final List<dynamic> data = response;
+  return data.map((item) {
+    final organizer = item['organizer'];
+    final reports = item['report'] as List<dynamic>; // Get the reports list
+    final reportsCount = reports.length; // Calculate the reports count
+    final capacity = item['capacity'];
+    final attendeesCount = capacity != null ? (capacity * (2 / 3)).floor() : 0; // Calculate 2/3 of the capacity
+    Color reportsColor;
+
+    if (reportsCount < attendeesCount * 0.25) {
+      reportsColor = Colors.green;
+    } else if (reportsCount < attendeesCount * 0.66) {
+      reportsColor = Colors.yellow;
+    } else {
+      reportsColor = Colors.red;
+    }
+
+    return Event(
+      id: item['id'],
+      name: item['name'],
+      status: item['status'],
+      organizerEmail: organizer['email'],
+      reportsCount: reportsCount, // Pass the reports count to the model
+      reportsColor: reportsColor, 
+            report: reports,
+// Pass the reports color to the model
+    );
+  }).toList();
 }
+
 
 
 DataRow recentFileDataRow(Event fileInfo, BuildContext context) {

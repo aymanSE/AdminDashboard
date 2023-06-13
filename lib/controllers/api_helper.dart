@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
  
 class ApiHelper {
-  String domain = "192.168.8.120:3333"; 
+  String domain = "192.168.67.249:3333"; 
  
  String gmailUsername = 'clustevents@gmail.com';
  String gmailPassword = 'ovqsvecbocresybx';

@@ -1,3 +1,4 @@
+import 'package:admin/screens/dashboard/components/reportcards.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mailer/mailer.dart';
@@ -82,10 +83,13 @@ class _OrganizationDataScreenState extends State<OrganizationDataScreen> {
                           ),
                           DataColumn(
                             label: Text("Status"),
+                          ),  DataColumn(
+                            label: Text("reports"),
                           ),
                           DataColumn(
                             label: Text("Action"),
-                          ),
+                          ),  
+                        
                         ],
                         rows: List.generate(events.length, (index) {
                           final fileInfo = events[index];
@@ -161,22 +165,38 @@ class _OrganizationDataScreenState extends State<OrganizationDataScreen> {
       },
     );
   }
+Future<List<Event>> fetchEvents(int organizationId) async {
+  final response = await ApiHelper().get('/event/org/$organizationId');
+  final List<dynamic> data = response;
+  return data.map((item) {
+    final organizer = item['organizer'];
+    final reports = item['report'] as List<dynamic>; // Get the reports list
+    final reportsCount = reports.length; // Calculate the reports count
+    final capacity = item['capacity'];
+    final attendeesCount = item['spot'].length; // Count the number of attendees
+    Color reportsColor;
 
-  Future<List<Event>> fetchEvents(int organizationId) async {
-    final response = await ApiHelper().get('/event/org/$organizationId');
-    
-      final List<dynamic> data = response;
-      return data.map((item) {
-        final organizer = item['organizer'];
-        return Event(
-          id: item['id'],
-          name: item['name'],
-          status: item['status'],
-          organizerEmail: organizer['email'],
-        );
-      }).toList();
-    
-  }
+    if (reportsCount < attendeesCount * 0.25) {
+      reportsColor = Colors.green;
+    } else if (reportsCount < attendeesCount * 0.66) {
+      reportsColor = Colors.yellow;
+    } else {
+      reportsColor = Colors.red;
+    }
+
+    return Event(
+      id: item['id'],
+      name: item['name'],
+      status: item['status'],
+      organizerEmail: organizer['email'],
+      reportsCount: reportsCount, // Pass the reports count to the model
+      reportsColor: reportsColor, 
+      report: reports// Pass the reports color to the model
+    );
+  }).toList();
+}
+
+
 
   DataRow recentFileDataRow(Event fileInfo, BuildContext context) {
     void showConfirmationPopup(Event fileInfo) {
@@ -234,24 +254,42 @@ class _OrganizationDataScreenState extends State<OrganizationDataScreen> {
       );
     }
 
-    return DataRow(
-      cells: [
-        DataCell(
-          Text(fileInfo.id.toString()),
-        ),
-        DataCell(
-          Text(fileInfo.name),
-        ),
-        DataCell(Text(fileInfo.organizerEmail)),
-        DataCell(Text(fileInfo.status)),
-        DataCell(
-          IconButton(
-            icon: Icon(Icons.close),
-            onPressed: () => showConfirmationPopup(fileInfo),
-          ),
-        ),
-      ],
+    return  DataRow(
+    cells: [
+      DataCell(
+        Text(fileInfo.id.toString()),
+      ),
+      DataCell(
+        Text(fileInfo.name),
+      ),
+      DataCell(Text(fileInfo.organizerEmail)),
+      DataCell(Text(fileInfo.status)),
+       DataCell(
+      GestureDetector(
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EventReportsScreen(event: fileInfo),
+      ),
     );
+  },
+  child: Text(
+    fileInfo.reportsCount.toString(),
+    style: TextStyle(color: fileInfo.reportsColor),
+  ),
+),
+
+      ),
+      DataCell(
+        IconButton(
+          icon: Icon(Icons.close),
+          onPressed: () => showConfirmationPopup(fileInfo),
+        ),
+      ),
+     
+    ],
+  );
   }
 
   Future<void> sendEmail(String recipientEmail, String emailText) async {
