@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../../constants.dart';
+import '../../../controllers/api_helper.dart';
 
 class Chart extends StatefulWidget {
   final int orgId;
@@ -15,6 +16,8 @@ class Chart extends StatefulWidget {
 }
 
 class _ChartState extends State<Chart> {
+  final ApiHelper apiHelper = ApiHelper();
+
   int value = 0;
   List<PieChartSectionData> pieChartSelectionData = [];
   bool _isMounted = false; // Add a flag to track the mounted state
@@ -31,30 +34,20 @@ class _ChartState extends State<Chart> {
     _isMounted = false; // Set the flag to false when the widget is disposed
     super.dispose();
   }
-  Future<void> fetchData() async {
-    final liveResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getliveorg/${widget.orgId}'),
-    );
-    final futureResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getfutureorg/${widget.orgId}'),
-    );
-    final pastResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getpastorg/${widget.orgId}'),
-    );
-    final countResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/count/${widget.orgId}'),
-    );
-    if (liveResponse.statusCode == 200 &&
-        futureResponse.statusCode == 200 &&
-        pastResponse.statusCode == 200 &&
-        countResponse.statusCode == 200) {
-      final liveData = json.decode(liveResponse.body);
-      final futureData = json.decode(futureResponse.body);
-      final pastData = json.decode(pastResponse.body);
-      final countData = json.decode(countResponse.body);
+Future<void> fetchData() async {
+  try {
+    dynamic liveResponse = await apiHelper.get('/event/getliveorg/${widget.orgId}');
+    dynamic futureResponse = await apiHelper.get('/event/getfutureorg/${widget.orgId}');
+    dynamic pastResponse = await apiHelper.get('/event/getpastorg/${widget.orgId}');
+    dynamic countResponse = await apiHelper.get('/event/count/${widget.orgId}');
+ 
+      final liveData = liveResponse;
+      final futureData = futureResponse;
+      final pastData = pastResponse;
+      final countData = countResponse;
+
       if (_isMounted) {
         setState(() {
-          //value = liveData + futureData + pastData;
           value = countData;
           pieChartSelectionData = [
             PieChartSectionData(
@@ -78,8 +71,12 @@ class _ChartState extends State<Chart> {
           ];
         });
       }
-    }
+   
+  } catch (e) {
+    throw e;
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

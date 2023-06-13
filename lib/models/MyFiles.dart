@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../controllers/api_helper.dart';
+
 class CloudStorageInfo {
   final String? svgSrc, title, totalStorage;
   final int? numOfFiles, percentage;
@@ -29,14 +31,17 @@ class OrgDetails extends StatefulWidget {
 }
 
 class _OrgDetailsState extends State<OrgDetails> {
+  final ApiHelper apiHelper = ApiHelper();
+
   Future<List<CloudStorageInfo>> fetchData() async {
+  try {
     // Fetch total attendance from API
-    final attendanceResponse = await http.get(Uri.parse('http://172.28.205.102:3333/spot/totalattendance/${widget.orgId}'));
-    final attendanceData = jsonDecode(attendanceResponse.body);
+    dynamic attendanceResponse = await apiHelper.get('/spot/totalattendance/${widget.orgId}');
+    dynamic attendanceData = attendanceResponse['data'];
 
     // Fetch total views from API
-    final viewsResponse = await http.get(Uri.parse('http://172.28.205.102:3333/event/totalviews/${widget.orgId}'));
-    final viewsData = jsonDecode(viewsResponse.body);
+    dynamic viewsResponse = await apiHelper.get('/event/totalviews/${widget.orgId}');
+    dynamic viewsData = viewsResponse['data'];
 
     // Create CloudStorageInfo objects
     List<CloudStorageInfo> data = [
@@ -48,7 +53,6 @@ class _OrgDetailsState extends State<OrgDetails> {
         color: primaryColor,
         percentage: 0,
       ),
-      
       CloudStorageInfo(
         title: "Views",
         numOfFiles: viewsData.isNotEmpty ? viewsData[0]['views'] : 0,
@@ -60,7 +64,11 @@ class _OrgDetailsState extends State<OrgDetails> {
     ];
 
     return data;
+  } catch (e) {
+    throw e;
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

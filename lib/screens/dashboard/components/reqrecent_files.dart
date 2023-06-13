@@ -24,10 +24,25 @@ class _ReqRecentFilesState extends State<ReqRecentFiles> {
     _fetchRecentFiles = reqFetchData();
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
+ 
+ void showDisapprovePopup(ReqRecentFile fileInfo) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return DisapprovePopup(
+        fileInfo: fileInfo,
+        onDisapprove: () {
+          setState(() {
+            _fetchRecentFiles = reqFetchData();
+          });
+        },
+      );
+    },
+  );
+}
+
     return Container(
       padding: EdgeInsets.all(defaultPadding),
       decoration: BoxDecoration(
@@ -81,6 +96,8 @@ class _ReqRecentFilesState extends State<ReqRecentFiles> {
                         setState(() {
                           _fetchRecentFiles = reqFetchData();
                         });
+                      }, () {
+                        showDisapprovePopup(fileInfo);
                       });
                     }),
                   ),
@@ -96,8 +113,8 @@ class _ReqRecentFilesState extends State<ReqRecentFiles> {
   }
 }
 
-DataRow reqrecentFileDataRow(
-    ReqRecentFile fileInfo, BuildContext context, VoidCallback onUpdate) {
+DataRow reqrecentFileDataRow(ReqRecentFile fileInfo, BuildContext context,
+    VoidCallback onUpdate, VoidCallback onDisapprove) {
   return DataRow(
     cells: [
       DataCell(
@@ -121,54 +138,74 @@ DataRow reqrecentFileDataRow(
       DataCell(Text(fileInfo.email!)),
       DataCell(Text(fileInfo.verified!)),
       DataCell(
-        ElevatedButton.icon(
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.symmetric(
-              horizontal: defaultPadding * 1.5,
-              vertical: defaultPadding / 1,
-            ),
-          ),
-          onPressed: () async {
-            final response = await http.put(
-                Uri.parse('http://192.168.8.120:3333/user/verify/${fileInfo.ID}'));
-            if (response.statusCode == 200) {
-              // Send email when the button is clicked
-              await sendEmail(fileInfo.email!);
+        Row(
+          children: [
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                  horizontal: defaultPadding * 1.5,
+                  vertical: defaultPadding / 1,
+                ),
+              ),
+              onPressed: () async {
+                final response = await http.put(
+                  Uri.parse('http://127.0.0.1:3333/user/verify/${fileInfo.ID}'),
+                );
+                if (response.statusCode == 200) {
+                  // Send email when the button is clicked
+                  await sendEmail(
+                    fileInfo.email!,
+                    'Your request to become an organizer has been approved.',
+                  );
 
-              // Call the callback function to update recent files
-              onUpdate();
-            } else {
-              print('Failed to approve');
-            }
-          },
-          icon: Icon(Icons.check),
-          label: Text("Approve"),
+                  // Call the callback function to update recent files
+                  onUpdate();
+                } else {
+                  print('Failed to approve');
+                }
+              },
+              icon: Icon(Icons.check),
+              label: Text("Approve"),
+            ),
+            SizedBox(width: defaultPadding / 2),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                padding: EdgeInsets.symmetric(
+                  horizontal: defaultPadding * 1.5,
+                  vertical: defaultPadding / 1,
+                ),
+                primary: Colors.red,
+              ),
+              onPressed: onDisapprove,
+              icon: Icon(Icons.close),
+              label: Text("Disapprove"),
+            ),
+          ],
         ),
       ),
     ],
   );
 }
 
-Future<void> sendEmail(String email) async {
-    final smtpServer = gmail('clustevents@gmail.com', 'ovqsvecbocresybx');
+Future<void> sendEmail(String email, String body) async {
+  final smtpServer = gmail('clustevents@gmail.com', 'ovqsvecbocresybx');
 
-    final message = Message()
-      ..from = Address('clustevents@gmail.com', 'Clust Events')
-      ..recipients.add(email)
-      ..subject = 'Approval Notification'
-      ..text =
-          'Your request to become organizer has been approved. This message has been sent from the dashboard!';
+  final message = Message()
+    ..from = Address('clustevents@gmail.com', 'Clust Events')
+    ..recipients.add(email)
+    ..subject = 'Approval Notification'
+    ..text = body;
 
-    try {
-      final sendReport = await send(message, smtpServer);
-      print('Email sent: ${sendReport.toString()}');
-    } on MailerException catch (e) {
-      print('Sending email failed: ${e.toString()}');
-    }
+  try {
+    final sendReport = await send(message, smtpServer);
+    print('Email sent: ${sendReport.toString()}');
+  } on MailerException catch (e) {
+    print('Sending email failed: ${e.toString()}');
   }
+}
 
 Future<List<ReqRecentFile>> reqFetchData() async {
-  final response = await http.get(Uri.parse('http://192.168.8.120:3333/user/req'));
+  final response = await http.get(Uri.parse('http://127.0.0.1:3333/user/req'));
   if (response.statusCode == 200) {
     final List<dynamic> data = json.decode(response.body);
     return data.map((item) {
@@ -181,5 +218,78 @@ Future<List<ReqRecentFile>> reqFetchData() async {
     }).toList();
   } else {
     throw Exception('Failed to fetch data');
+  }
+}
+class DisapprovePopup extends StatefulWidget {
+  final ReqRecentFile fileInfo;
+  final VoidCallback onDisapprove;
+
+  DisapprovePopup({required this.fileInfo, required this.onDisapprove});
+
+  @override
+  _DisapprovePopupState createState() => _DisapprovePopupState();
+}
+
+class _DisapprovePopupState extends State<DisapprovePopup> {
+  late TextEditingController _reasonController;
+
+  @override
+  void initState() {
+    super.initState();
+    _reasonController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    void disapproveRequest(String reason) async {
+      // API call to disapprove the request
+      final response = await http.put(
+        Uri.parse('http://127.0.0.1:3333/user/disapprove/${widget.fileInfo.ID}'),
+        body: {'reason': reason},
+      );
+
+      if (response.statusCode == 200) {
+        // Send email when the request is disapproved
+        await sendEmail(
+          widget.fileInfo.email!,
+          'Your request to become an organizer has been disapproved. Reason: $reason',
+        );
+      } else {
+        print('Failed to disapprove');
+      }
+    }
+
+    return AlertDialog(
+      title: Text("Disapprove Request"),
+      content: TextField(
+        controller: _reasonController,
+        decoration: InputDecoration(
+          labelText: 'Reason',
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            final reason = _reasonController.text;
+            widget.onDisapprove.call(); // Call the disapprove callback function
+            disapproveRequest(reason); // Call the API to disapprove the request
+            Navigator.of(context).pop(); // Close the popup
+          },
+          child: Text('Disapprove'),
+        ),
+      ],
+    );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:admin/controllers/api_helper.dart';
 import 'package:admin/models/MyFiles.dart';
 import 'package:admin/responsive.dart';
 import 'package:flutter/material.dart';
@@ -37,44 +38,35 @@ class _MyFilesState extends State<MyFiles> {
   }
 
   Future<void> fetchData() async {
-    final attendanceResponse = await http.get(
-      Uri.parse(
-          'http://192.168.93.1:3333/spot/totalattendance/${widget.orgId}'),
-    );
-    final viewsResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/totalviews/${widget.orgId}'),
-    );
-    final eventsResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/count/${widget.orgId}'),
-    );
+ final attendanceResponse = await ApiHelper().get('/spot/totalattendance/${widget.orgId}');
+  final viewsResponse = await ApiHelper().get('/event/totalviews/${widget.orgId}');
+  final eventsResponse = await ApiHelper().get('/event/count/${widget.orgId}');
 
-    if (attendanceResponse.statusCode == 200) {
-      final attendanceData = json.decode(attendanceResponse.body);
-      if (_isMounted) {
+    
+       if (_isMounted) {
         setState(() {
-          totalAttendance = attendanceData;
+          totalAttendance = attendanceResponse;
         });
       }
-    }
+   
 
-    if (viewsResponse.statusCode == 200) {
-      final viewsData = json.decode(viewsResponse.body) as List<dynamic>;
+ 
+      final viewsData =  viewsResponse as List<dynamic>;
       final List<int> viewsList =
           viewsData.map<int>((item) => item['views']).toList();
       if (_isMounted) {
         setState(() {
           totalViews = viewsList;
         });
-      }
+      
     }
-    if (eventsResponse.statusCode == 200) {
-      final eventsData = json.decode(eventsResponse.body);
+ 
       if (_isMounted) {
         setState(() {
-          totalEvents = eventsData;
+          totalEvents = eventsResponse;
         });
       }
-    }
+    
   }
 
   @override

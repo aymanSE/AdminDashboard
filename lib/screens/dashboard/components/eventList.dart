@@ -5,6 +5,8 @@ import 'package:mailer/smtp_server/gmail.dart';
 import 'dart:convert';
 
 import '../../../constants.dart';
+import '../../../controllers/api_helper.dart';
+import 'orgeventList.dart';
 
 class EventListScreen extends StatefulWidget {
   @override
@@ -107,10 +109,9 @@ class _EventListScreenState extends State<EventListScreen> {
 }
 
 Future<List<Event>> fetchEvents() async {
-  final response =
-      await http.get(Uri.parse('http://127.0.0.1:3333/event/admin'));
-  if (response.statusCode == 200) {
-    final List<dynamic> data = json.decode(response.body);
+  final response = await ApiHelper().get('/event/admin');
+  
+    final List<dynamic> data = response;
     return data.map((item) {
       final organizer = item['organizer'];
       return Event(
@@ -120,10 +121,9 @@ Future<List<Event>> fetchEvents() async {
         organizerEmail: organizer['email'],
       );
     }).toList();
-  } else {
-    throw Exception('Failed to fetch events');
-  }
+ 
 }
+
 
 DataRow recentFileDataRow(Event fileInfo, BuildContext context) {
   void showConfirmationPopup(Event fileInfo) {
@@ -218,15 +218,16 @@ Future<void> sendEmail(String recipientEmail, String emailText) async {
   // Rest of the code remains the same
 }
 
+
 Future<void> deleteEvent(int id) async {
-  final response =
-      await http.delete(Uri.parse('http://127.0.0.1:3333/event/$id'));
+  final response = await ApiHelper().delete('/event/$id');
   if (response.statusCode == 200) {
     print("sent");
   } else {
     throw Exception('Failed to delete event');
   }
 }
+
 
 class OrgDetails extends StatelessWidget {
   final int orgId;
@@ -245,16 +246,4 @@ class OrgDetails extends StatelessWidget {
   }
 }
 
-class Event {
-  final int id;
-  final String name;
-  final String status;
-  final String organizerEmail;
 
-  Event({
-    required this.id,
-    required this.name,
-    required this.status,
-    required this.organizerEmail,
-  });
-}

@@ -33,16 +33,16 @@ class _SysChartState extends State<SysChart> {
 
   Future<void> fetchData() async {
     final liveResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getlivecount'),
+      Uri.parse('http://127.0.0.1:3333/event/getlivecount'),
     );
     final futureResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getfuturecount'),
+      Uri.parse('http://127.0.0.1:3333/event/getfuturecount'),
     );
     final pastResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/getpastcount'),
+      Uri.parse('http://127.0.0.1:3333/event/getpastcount'),
     );
     final countResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/count'),
+      Uri.parse('http://127.0.0.1:3333/event/count'),
     );
     if (liveResponse.statusCode == 200 &&
         futureResponse.statusCode == 200 &&

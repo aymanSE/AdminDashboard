@@ -40,25 +40,25 @@ int  totalPend=0;
   }
   Future<void> fetchData() async {
      final attendanceResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/spot/count'),
+      Uri.parse('http://127.0.0.1:3333/spot/count'),
     );
     final viewsResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/totalviews'),
+      Uri.parse('http://127.0.0.1:3333/event/totalviews'),
     );
     final eventsResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/event/count'),
+      Uri.parse('http://127.0.0.1:3333/event/count'),
     );
     final usersResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/user/count'),
+      Uri.parse('http://127.0.0.1:3333/user/count'),
     );
         final attendResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/user/countAtten'),
+      Uri.parse('http://127.0.0.1:3333/user/countAtten'),
     );
         final pendResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/user/countPen'),
+      Uri.parse('http://127.0.0.1:3333/user/countPen'),
     );
          final orgResponse = await http.get(
-      Uri.parse('http://192.168.93.1:3333/user/countOrg'),
+      Uri.parse('http://127.0.0.1:3333/user/countOrg'),
     );
     if (attendanceResponse.statusCode == 200) {
       final attendanceData = json.decode(attendanceResponse.body);
