@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
+import 'api_helper.dart';
 class ReqRecentFile {
   final String? ID, title, email, verified;
 
@@ -8,9 +10,9 @@ class ReqRecentFile {
 List<ReqRecentFile> reqdemoRecentFiles = [];
 
 Future<void> reqfetchData() async {
-  final response = await http.get(Uri.parse( 'http://192.168.8.120:3333/user/req')   );
-  if (response.statusCode == 200) {
-    final List<dynamic> data = json.decode(response.body);
+  final response = await ApiHelper().get('user/req');
+  
+    final List<dynamic> data  =response ;
     reqdemoRecentFiles = data.map((item) {
       return ReqRecentFile(
        
@@ -21,7 +23,5 @@ Future<void> reqfetchData() async {
         verified : item['SID'].toString(),
       );
     }).toList();
-  } else {
-    throw Exception('Failed to fetch data');
-  }
+  
 }

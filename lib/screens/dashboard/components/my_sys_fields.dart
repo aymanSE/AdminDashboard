@@ -1,10 +1,11 @@
-import 'package:admin/models/MyFiles.dart';
+import 'package:admin/models/Card_Model.dart';
 import 'package:admin/responsive.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../../constants.dart';
+import '../../../controllers/api_helper.dart';
 import 'file_info_card.dart';
 
 class MySysFiles extends StatefulWidget {
@@ -39,86 +40,80 @@ int  totalPend=0;
     super.dispose();
   }
   Future<void> fetchData() async {
-     final attendanceResponse = await http.get(
-      Uri.parse('http://127.0.0.1:3333/spot/count'),
+     final attendanceResponse = await ApiHelper().get(
+      'spot/count'
     );
-    final viewsResponse = await http.get(
-      Uri.parse('http://127.0.0.1:3333/event/totalviews'),
+    final viewsResponse = await ApiHelper().get(
+      'event/totalviews'
     );
-    final eventsResponse = await http.get(
-      Uri.parse('http://127.0.0.1:3333/event/count'),
+    final eventsResponse = await ApiHelper().get(
+      'event/count'
     );
-    final usersResponse = await http.get(
-      Uri.parse('http://127.0.0.1:3333/user/count'),
+    final usersResponse = await ApiHelper().get(
+      'user/count'
     );
-        final attendResponse = await http.get(
-      Uri.parse('http://127.0.0.1:3333/user/countAtten'),
+        final attendResponse = await ApiHelper().get(
+      'user/countAtten'
     );
-        final pendResponse = await http.get(
-      Uri.parse('http://127.0.0.1:3333/user/countPen'),
+        final pendResponse = await ApiHelper().get(
+      'user/countPen'
     );
-         final orgResponse = await http.get(
-      Uri.parse('http://127.0.0.1:3333/user/countOrg'),
+         final orgResponse = await ApiHelper().get(
+      'user/countOrg'
     );
-    if (attendanceResponse.statusCode == 200) {
-      final attendanceData = json.decode(attendanceResponse.body);
+    
+      final attendanceData =  attendanceResponse ;
       if (_isMounted) { // Check if the widget is still mounted before calling setState()
         setState(() {
           totalAttendance = attendanceData;
         });
-      }
+   
     }
 
-    if (viewsResponse.statusCode == 200) {
-      final viewsData = json.decode(viewsResponse.body) as List<dynamic>;
+       final viewsData = viewsResponse as List<dynamic>;
       final List<int> viewsList =
           viewsData.map<int>((item) => item['views']).toList();
       if (_isMounted) { // Check if the widget is still mounted before calling setState()
         setState(() {
           totalViews = viewsList;
         });
-      }
+       
     }
 
-    if (eventsResponse.statusCode == 200) {
-      final eventsData = json.decode(eventsResponse.body);
+       final eventsData = eventsResponse;
       if (_isMounted) { // Check if the widget is still mounted before calling setState()
         setState(() {
           totalEvents = eventsData;
         });
-      }
+       
     }
-      if (usersResponse.statusCode == 200) {
-      final usersData = json.decode(usersResponse.body);
+       final usersData = usersResponse;
       if (_isMounted) { // Check if the widget is still mounted before calling setState()
         setState(() {
           totalUsers = usersData;
         });
-      }
+       
     }
-      if (attendResponse.statusCode == 200) {
-      final attendData = json.decode(attendResponse.body);
+       final attendData = attendResponse;
       if (_isMounted) { // Check if the widget is still mounted before calling setState()
         setState(() {
           totalAttend = attendData;
         });
-      }
+       
     }
-      if (orgResponse.statusCode == 200) {
-      final orgsData = json.decode(orgResponse.body);
+       final orgsData = orgResponse;
       if (_isMounted) { // Check if the widget is still mounted before calling setState()
         setState(() {
           totalOrg = orgsData;
         });
-      }
+       
     }
-     if (pendResponse.statusCode == 200) {
-      final pendsData = json.decode(pendResponse.body);
+       final pendsData = pendResponse;
       if (_isMounted) { // Check if the widget is still mounted before calling setState()
         setState(() {
           totalPend = pendsData;
         });
-      }
+       
     }
   }
 

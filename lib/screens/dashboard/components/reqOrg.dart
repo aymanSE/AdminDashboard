@@ -5,7 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import '../../../constants.dart';
-import '../../../models/ReqRecentFile.dart';
+import '../../../controllers/api_helper.dart';
+import '../../../controllers/ReqRecentFile.dart';
 import '../OrgDetails.dart';
 
 class ReqRecentFiles extends StatefulWidget {
@@ -26,22 +27,21 @@ class _ReqRecentFilesState extends State<ReqRecentFiles> {
 
   @override
   Widget build(BuildContext context) {
- 
- void showDisapprovePopup(ReqRecentFile fileInfo) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return DisapprovePopup(
-        fileInfo: fileInfo,
-        onDisapprove: () {
-          setState(() {
-            _fetchRecentFiles = reqFetchData();
-          });
+    void showDisapprovePopup(ReqRecentFile fileInfo) {
+      showDialog(
+        context: context,
+        builder: (context) {
+          return DisapprovePopup(
+            fileInfo: fileInfo,
+            onDisapprove: () {
+              setState(() {
+                _fetchRecentFiles = reqFetchData();
+              });
+            },
+          );
         },
       );
-    },
-  );
-}
+    }
 
     return Container(
       padding: EdgeInsets.all(defaultPadding),
@@ -148,21 +148,16 @@ DataRow reqrecentFileDataRow(ReqRecentFile fileInfo, BuildContext context,
                 ),
               ),
               onPressed: () async {
-                final response = await http.put(
-                  Uri.parse('http://127.0.0.1:3333/user/verify/${fileInfo.ID}'),
-                );
-                if (response.statusCode == 200) {
-                  // Send email when the button is clicked
-                  await sendEmail(
-                    fileInfo.email!,
-                    'Your request to become an organizer has been approved.',
-                  );
+                final response =
+                    await ApiHelper().put('user/verify/${fileInfo.ID}');
 
-                  // Call the callback function to update recent files
-                  onUpdate();
-                } else {
-                  print('Failed to approve');
-                }
+                await sendEmail(
+                  fileInfo.email!,
+                  'Your request to become an organizer has been approved.',
+                );
+
+                // Call the callback function to update recent files
+                onUpdate();
               },
               icon: Icon(Icons.check),
               label: Text("Approve"),
@@ -205,21 +200,19 @@ Future<void> sendEmail(String email, String body) async {
 }
 
 Future<List<ReqRecentFile>> reqFetchData() async {
-  final response = await http.get(Uri.parse('http://127.0.0.1:3333/user/req'));
-  if (response.statusCode == 200) {
-    final List<dynamic> data = json.decode(response.body);
-    return data.map((item) {
-      return ReqRecentFile(
-        ID: "${item['id']}",
-        title: "${item['first_name']} ${item['last_name']}",
-        email: item['email'],
-        verified: item['SID'].toString(),
-      );
-    }).toList();
-  } else {
-    throw Exception('Failed to fetch data');
-  }
+  final response = await ApiHelper().get('/user/req');
+
+  final List<dynamic> data = response;
+  return data.map((item) {
+    return ReqRecentFile(
+      ID: "${item['id']}",
+      title: "${item['first_name']} ${item['last_name']}",
+      email: item['email'],
+      verified: item['SID'].toString(),
+    );
+  }).toList();
 }
+
 class DisapprovePopup extends StatefulWidget {
   final ReqRecentFile fileInfo;
   final VoidCallback onDisapprove;
@@ -249,20 +242,15 @@ class _DisapprovePopupState extends State<DisapprovePopup> {
   Widget build(BuildContext context) {
     void disapproveRequest(String reason) async {
       // API call to disapprove the request
-      final response = await http.put(
-        Uri.parse('http://127.0.0.1:3333/user/disapprove/${widget.fileInfo.ID}'),
-        body: {'reason': reason},
-      );
+      final response =
+          await ApiHelper().put('user/disapprove/${widget.fileInfo.ID}');
 
-      if (response.statusCode == 200) {
-        // Send email when the request is disapproved
-        await sendEmail(
-          widget.fileInfo.email!,
-          'Your request to become an organizer has been disapproved. Reason: $reason',
-        );
-      } else {
-        print('Failed to disapprove');
-      }
+      // Send email when the request is disapproved
+      await sendEmail(
+        widget.fileInfo.email!,
+        'Your request to become an organizer has been disapproved.\n Reason: $reason',
+      );
+    
     }
 
     return AlertDialog(

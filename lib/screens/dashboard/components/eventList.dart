@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import '../../../constants.dart';
 import '../../../controllers/api_helper.dart';
+import '../../../models/Event_Model.dart';
 import 'orgeventList.dart';
 
 class EventListScreen extends StatefulWidget {

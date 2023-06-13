@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 import '../../../constants.dart';
+import '../../../controllers/api_helper.dart';
 import 'chart.dart';
 import 'storage_info_card.dart';
 
@@ -40,24 +41,22 @@ class _SysStorageDetailsState extends State<SysStorageDetails> {
     // Assign the received data to liveData, futureData, and pastData
 
     // Example API call using http package
-       final liveResponse = await http.get(
-        Uri.parse('http://127.0.0.1:3333/event/getlivecount'),
+       final liveResponse = await ApiHelper().get(
+        'event/getlivecount' 
       );
      
-       final futureResponse = await http.get(
-        Uri.parse('http://127.0.0.1:3333/event/getfuturecount'),
+       final futureResponse = await ApiHelper().get(
+        'event/getfuturecount' 
       );
      
-       final pastResponse = await http.get(
-        Uri.parse('http://127.0.0.1:3333/event/getpastcount'),
+       final pastResponse = await ApiHelper().get(
+        'event/getpastcount' 
       );
     
-    if (liveResponse.statusCode == 200 &&
-        futureResponse.statusCode == 200 &&
-        pastResponse.statusCode == 200) {
-      final liveDataResponse = json.decode(liveResponse.body);
-      final futureDataResponse = json.decode(futureResponse.body);
-      final pastDataResponse = json.decode(pastResponse.body);
+   
+      final liveDataResponse = liveResponse;
+      final futureDataResponse = futureResponse;
+      final pastDataResponse = pastResponse;
      
       if (_isMounted) {
         setState(() {
@@ -66,7 +65,7 @@ class _SysStorageDetailsState extends State<SysStorageDetails> {
           pastData = pastDataResponse;
         });
       }
-    }
+    
   }
 
   @override

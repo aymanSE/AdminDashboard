@@ -7,9 +7,9 @@ import '../main/components/side_menu.dart';
 import 'components/eventList.dart';
 import 'components/header.dart';
 import 'components/my_sys_fields.dart';
-import 'components/recent_files.dart';
-import 'components/storage_details.dart';
-import 'components/sys_storage_details.dart';
+import 'components/OrgData.dart';
+import 'components/OrgStat.dart';
+import 'components/sys_stat_details.dart';
 
 class EventDetails extends StatefulWidget {
 

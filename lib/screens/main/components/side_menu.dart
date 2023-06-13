@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../dashboard/SysDetails.dart';
-import '../../dashboard/components/reqrecent_files.dart';
+import '../../dashboard/components/reqOrg.dart';
 import '../../dashboard/dashboard_screen.dart';
 import '../../dashboard/reqdashboard_screen.dart';
 import '../main_screen.dart';

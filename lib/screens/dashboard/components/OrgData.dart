@@ -7,6 +7,7 @@ import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server/gmail.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../constants.dart';
+import '../../../controllers/api_helper.dart';
 import '../OrgDetails.dart';
 
 class RecentFiles extends StatefulWidget {
@@ -106,10 +107,12 @@ class _RecentFilesState extends State<RecentFiles> {
 }
 
 Future<List<RecentFile>> fetchData() async {
+   
+
   final response =
-      await http.get(Uri.parse('http://127.0.0.1:3333/user/org'));
-  if (response.statusCode == 200) {
-    final List<dynamic> data = json.decode(response.body);
+     await ApiHelper().get('/user/org');
+
+    final List<dynamic> data = response;
     return data.map((item) {
       return RecentFile(
         ID: "${item['id']}",
@@ -118,9 +121,7 @@ Future<List<RecentFile>> fetchData() async {
         verified: item['SID'].toString(),
       );
     }).toList();
-  } else {
-    throw Exception('Failed to fetch data');
-  }
+ 
 }
 
 DataRow recentFileDataRow(RecentFile fileInfo, BuildContext context) {
@@ -237,16 +238,5 @@ Future<void> deleteItem(String id) async {
 
  
 
-class RecentFile {
-  final String? ID;
-  final String? title;
-  final String? email;
-  final String? verified;
-
-  RecentFile({
-    this.ID,
-    this.title,
-    this.email,
-    this.verified,
-  });
-}
+ 
+ 

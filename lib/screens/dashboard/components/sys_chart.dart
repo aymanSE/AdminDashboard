@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../../constants.dart';
+import '../../../controllers/api_helper.dart';
 
 class SysChart extends StatefulWidget {
   const SysChart();
@@ -32,26 +33,23 @@ class _SysChartState extends State<SysChart> {
   }
 
   Future<void> fetchData() async {
-    final liveResponse = await http.get(
-      Uri.parse('http://127.0.0.1:3333/event/getlivecount'),
+    final liveResponse = await ApiHelper().get(
+       'event/getlivecount' 
     );
-    final futureResponse = await http.get(
-      Uri.parse('http://127.0.0.1:3333/event/getfuturecount'),
+    final futureResponse = await ApiHelper().get(
+     'event/getfuturecount' 
     );
-    final pastResponse = await http.get(
-      Uri.parse('http://127.0.0.1:3333/event/getpastcount'),
+    final pastResponse = await ApiHelper().get(
+      'event/getpastcount' 
     );
-    final countResponse = await http.get(
-      Uri.parse('http://127.0.0.1:3333/event/count'),
+    final countResponse = await ApiHelper().get(
+      'event/count' 
     );
-    if (liveResponse.statusCode == 200 &&
-        futureResponse.statusCode == 200 &&
-        pastResponse.statusCode == 200 &&
-        countResponse.statusCode == 200) {
-      final liveData = json.decode(liveResponse.body);
-      final futureData = json.decode(futureResponse.body);
-      final pastData = json.decode(pastResponse.body);
-      final countData = json.decode(countResponse.body);
+   
+      final liveData = liveResponse;
+      final futureData = futureResponse;
+      final pastData = pastResponse;
+      final countData = countResponse;
       if (_isMounted) {
         setState(() {
           //value = liveData + futureData + pastData;
@@ -79,7 +77,7 @@ class _SysChartState extends State<SysChart> {
           ];
         });
       }
-    }
+    
   }
 
   @override

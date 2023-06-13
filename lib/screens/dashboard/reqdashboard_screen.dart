@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import '../../constants.dart';
 import 'components/header.dart';
 
-import 'components/recent_files.dart';
-import 'components/reqrecent_files.dart';
-import 'components/storage_details.dart';
+import 'components/OrgData.dart';
+import 'components/reqOrg.dart';
+import 'components/OrgStat.dart';
 
 class reqDashboardScreen extends StatelessWidget {
   @override

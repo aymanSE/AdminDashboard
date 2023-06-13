@@ -22,9 +22,9 @@ class ApiHelper {
     return responsing(response);
   }
 
-  Future put(String path, Map body) async {
+  Future put(String path ) async {
     Uri uri = Uri.http(domain, path);
-    var response = await http.put(uri, body: body);
+    var response = await http.put(uri );
     return responsing(response);
   }
 
