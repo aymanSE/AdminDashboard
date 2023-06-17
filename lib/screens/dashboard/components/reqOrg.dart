@@ -93,9 +93,7 @@ class _ReqRecentFilesState extends State<ReqRecentFiles> {
                       final fileInfo = recentFiles[index];
                       return reqrecentFileDataRow(fileInfo, context, () {
                         // Callback function to update recent files when the button is clicked
-                        setState(() {
-                          _fetchRecentFiles = reqFetchData();
-                        });
+                        
                       }, () {
                         showDisapprovePopup(fileInfo);
                       });
