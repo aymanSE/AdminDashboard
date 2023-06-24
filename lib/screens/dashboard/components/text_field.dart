@@ -11,14 +11,12 @@ class CustomTextField extends StatefulWidget {
     required this.type,
     required this.controller,
     required this.hint,
-    required this.lable,
-    this.forWhat = For.signup,
+     this.forWhat = For.signup,
   }): super(key: key);    
   Type type;
   TextEditingController controller;
   String hint;
-  String lable;
-  For forWhat;
+   For forWhat;
 
   @override
   State<CustomTextField> createState() => TtextFieldState();
@@ -31,8 +29,7 @@ class TtextFieldState extends State<CustomTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        lable(context),
-        Sized_Box().sizedBoxH(context, 15 ),
+         Sized_Box().sizedBoxH(context, 15 ),
         TextFormField(
           autovalidateMode: AutovalidateMode.onUserInteraction,
           validator:
@@ -47,9 +44,7 @@ class TtextFieldState extends State<CustomTextField> {
     );
   }
 
-  Text lable(BuildContext context) => Text(widget.lable,
-      style:   Theme.of(context).textTheme.labelLarge)
-         ;
+ 
 
   InputDecoration decoration(BuildContext context) {
     return InputDecoration(

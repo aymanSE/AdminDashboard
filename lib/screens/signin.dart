@@ -1,3 +1,4 @@
+import 'package:admin/models/Users_Model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
@@ -11,6 +12,7 @@ import 'dashboard/components/palate.dart';
 import 'dashboard/components/sized_box.dart';
 import 'dashboard/components/text_field.dart' as txt_field;
 import 'logo.dart';
+
 class SignIn extends StatefulWidget {
   const SignIn({Key? key}) : super(key: key);
 
@@ -28,13 +30,7 @@ class _SignInState extends State<SignIn> {
     return Theme(
       data: ThemeData(
         useMaterial3: true,
-        textTheme: Theme.of(context).textTheme.copyWith(
-              labelMedium: web.labelMedium(color: Palate.black.withOpacity(0.5)),
-              headlineMedium: TextStyle(
-                color: Palate.sand, // Set sign-in text color to Palate.sand
-              ),
-              
-            ),
+        textTheme: Theme.of(context).textTheme.apply(bodyColor: Colors.black),
       ),
       child: Scaffold(
         backgroundColor: Palate.black,
@@ -75,13 +71,10 @@ class _SignInState extends State<SignIn> {
             type: txt_field.Type.password,
             controller: passwordController,
             hint: "Password",
-            lable: "Password",
             forWhat: txt_field.For.signin,
-             
           ),
         ),
         Sized_Box().sizedBoxH(context, 7),
-         
       ],
     );
   }
@@ -90,12 +83,12 @@ class _SignInState extends State<SignIn> {
     return Container(
       width: 460,
       child: txt_field.CustomTextField(
+        
         type: txt_field.Type.email,
         controller: emailController,
         hint: "Email",
-        lable: "Email",
-        forWhat: txt_field.For.signin,
         
+        forWhat: txt_field.For.signin,
       ),
     );
   }
@@ -117,7 +110,7 @@ class _SignInState extends State<SignIn> {
               ),
             ),
             backgroundColor: MaterialStateProperty.all(
-              Palate.lighterBlack.withOpacity(0.48),
+              Palate.sand,
             ),
           ),
           child: Text(
@@ -130,13 +123,19 @@ class _SignInState extends State<SignIn> {
   }
 
   onPress(BuildContext context) {
+    User? user;
     if (_formKey.currentState!.validate()) {
       String email = emailController.text;
       String password = passwordController.text;
       print("before");
-      UserController().signin(email, password).then((value) {
-        print("during");
+      UserController().signin(email, password).then((value) async {
+        print("during"); //================call user get THEN  check ACCESS ROLE ACCESS DENIED SCREEN
+        user = await UserController().getAll();
+         if(user!.accessRole==AccessRole.admin)
         Navigator.pushNamed(context, "/main_screen");
+        else 
+      Navigator.pushNamed(context, "/access");
+
       }).catchError((ex, stacktrace) {
         print("error");
         print(ex.toString());

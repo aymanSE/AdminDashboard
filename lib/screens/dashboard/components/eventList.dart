@@ -1,3 +1,4 @@
+import 'package:admin/screens/dashboard/components/palate.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mailer/mailer.dart';
@@ -210,6 +211,7 @@ DataRow recentFileDataRow(Event fileInfo, BuildContext context) {
       DataCell(Text(fileInfo.status)),
        DataCell(
         IconButton(
+          color: Palate.lightwine,
           icon: Icon(Icons.close),
           onPressed: () => showConfirmationPopup(fileInfo),
         ),

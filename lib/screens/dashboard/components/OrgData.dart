@@ -1,4 +1,5 @@
 import 'package:admin/models/Users_Model.dart';
+import 'package:admin/screens/dashboard/components/palate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'dart:convert';
@@ -153,13 +154,13 @@ Future<void> sendEmail(String emailContent,String email) async {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Are you sure you want to delete this item?'),
+            Text('Are you sure you want to delete this organizer?'),
             SizedBox(height: defaultPadding),
             Text('Reason'),
             TextField(
               controller: emailContentController,
               decoration: InputDecoration(
-                hintText: 'Enter email content...',
+                hintText: 'Enter delete reason',
               ),
               maxLines: 4,
             ),
@@ -220,6 +221,7 @@ Future<void> sendEmail(String emailContent,String email) async {
       DataCell(
         IconButton(
           icon: Icon(Icons.close),
+          color:  Palate.lightwine,
           onPressed: () => showConfirmationPopup(fileInfo),
         ),
       ),

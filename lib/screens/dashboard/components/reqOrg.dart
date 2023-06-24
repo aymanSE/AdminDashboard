@@ -1,3 +1,4 @@
+import 'package:admin/screens/dashboard/components/palate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'dart:convert';
@@ -68,6 +69,7 @@ class _ReqRecentFilesState extends State<ReqRecentFiles> {
                 return Text('Failed to fetch data');
               } else if (snapshot.hasData) {
                 final recentFiles = snapshot.data!;
+                if(!recentFiles.isEmpty){
                 return SizedBox(
                   width: double.infinity,
                   child: DataTable(
@@ -99,7 +101,16 @@ class _ReqRecentFilesState extends State<ReqRecentFiles> {
                       });
                     }),
                   ),
-                );
+                );}else {
+                return SizedBox(
+                width: double.infinity,
+
+                  child: Center(
+                    child: Text('There is no requests at the moment',style: TextStyle(
+                      color:Palate.sand 
+                    ),),
+                  ));
+              }
               } else {
                 return Text('No data available');
               }
@@ -139,7 +150,9 @@ DataRow reqrecentFileDataRow(ReqRecentFile fileInfo, BuildContext context,
         Row(
           children: [
             ElevatedButton.icon(
+              
               style: ElevatedButton.styleFrom(
+          
                 padding: EdgeInsets.symmetric(
                   horizontal: defaultPadding * 1.5,
                   vertical: defaultPadding / 1,

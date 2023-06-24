@@ -76,8 +76,8 @@ class User {
         accessRole: json["access_role"] == "organizer"
             ? AccessRole.organizer
             : json["access_role"] == "pending"
-                ? AccessRole.pending
-                : AccessRole.attendee);
+                ? AccessRole.pending:
+               json["access_role"] == "pending" ?  AccessRole.attendee: AccessRole.admin);
     _user.verified = json['verified'];
     return _user;
   }

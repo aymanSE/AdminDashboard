@@ -1,4 +1,7 @@
+import 'package:admin/controllers/rate_controller.dart';
+import 'package:admin/screens/dashboard/components/palate.dart';
 import 'package:admin/screens/dashboard/components/reportcards.dart';
+import 'package:admin/screens/main/components/rate_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:mailer/mailer.dart';
@@ -21,10 +24,11 @@ class OrganizationDataScreen extends StatefulWidget {
 
 class _OrganizationDataScreenState extends State<OrganizationDataScreen> {
   Future<List<Event>>? _fetchEvents;
-
+  RateProvider provider = RateProvider();
   @override
   void initState() {
     super.initState();
+
     _fetchEvents = fetchEvents(widget.organizationId);
   }
 
@@ -67,36 +71,47 @@ class _OrganizationDataScreenState extends State<OrganizationDataScreen> {
                     return Text('Failed to fetch data');
                   } else if (snapshot.hasData) {
                     final events = snapshot.data!;
-                    return SizedBox(
-                      width: double.infinity,
-                      child: DataTable(
-                        columnSpacing: defaultPadding,
-                        columns: [
-                          DataColumn(
-                            label: Text("ID"),
-                          ),
-                          DataColumn(
-                            label: Text("Event name"),
-                          ),
-                          DataColumn(
-                            label: Text("Organizer Email"),
-                          ),
-                          DataColumn(
-                            label: Text("Status"),
-                          ),  DataColumn(
-                            label: Text("reports"),
-                          ),
-                          DataColumn(
-                            label: Text("Action"),
-                          ),  
-                        
-                        ],
-                        rows: List.generate(events.length, (index) {
-                          final fileInfo = events[index];
-                          return recentFileDataRow(fileInfo, context);
-                        }),
-                      ),
-                    );
+                    if (events.isNotEmpty) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: DataTable(
+                          columnSpacing: defaultPadding,
+                          columns: [
+                            DataColumn(
+                              label: Text("ID"),
+                            ),
+                            DataColumn(
+                              label: Text("Event name"),
+                            ),
+                            DataColumn(
+                              label: Text("Organizer Email"),
+                            ),
+                            DataColumn(
+                              label: Text("Status"),
+                            ),
+                            DataColumn(
+                              label: Text("reports"),
+                            ),
+                            DataColumn(
+                              label: Text("Rating"),
+                            ),
+                          ],
+                          rows: List.generate(events.length, (index) {
+                            final fileInfo = events[index];
+
+                            return recentFileDataRow(fileInfo, context);
+                          }),
+                        ),
+                      );
+                    } else
+                      return SizedBox(
+                          width: double.infinity,
+                          child: Center(
+                            child: Text(
+                              'Organizer has no events',
+                              style: TextStyle(color: Palate.sand),
+                            ),
+                          ));
                   } else {
                     return Text('No data available');
                   }
@@ -165,38 +180,50 @@ class _OrganizationDataScreenState extends State<OrganizationDataScreen> {
       },
     );
   }
-Future<List<Event>> fetchEvents(int organizationId) async {
-  final response = await ApiHelper().get('/event/org/$organizationId');
-  final List<dynamic> data = response;
-  return data.map((item) {
-    final organizer = item['organizer'];
-    final reports = item['report'] as List<dynamic>; // Get the reports list
-    final reportsCount = reports.length; // Calculate the reports count
-    final capacity = item['capacity'];
-    final attendeesCount = item['spot'].length; // Count the number of attendees
-    Color reportsColor;
 
-    if (reportsCount < attendeesCount * 0.25) {
-      reportsColor = Colors.green;
-    } else if (reportsCount < attendeesCount * 0.66) {
-      reportsColor = Colors.yellow;
-    } else {
-      reportsColor = Colors.red;
-    }
+  Future<List<Event>> fetchEvents(int organizationId) async {
+    final response = await ApiHelper().get('/event/org/$organizationId');
+    final List<dynamic> data = response;
 
-    return Event(
-      id: item['id'],
-      name: item['name'],
-      status: item['status'],
-      organizerEmail: organizer['email'],
-      reportsCount: reportsCount, // Pass the reports count to the model
-      reportsColor: reportsColor, 
-      report: reports// Pass the reports color to the model
-    );
-  }).toList();
-}
+    return await data.map((item) {
+      final organizer = item['organizer'];
+      final reports = item['report'] as List<dynamic>; // Get the reports list
+      final reportsCount = reports.length; // Calculate the reports count
+      final capacity = item['capacity'];
+      final attendeesCount =
+          item['spot'].length; // Count the number of attendees
+      Color reportsColor;
 
-
+      if (reportsCount == 0)
+        reportsColor = Colors.white;
+      else if (reportsCount < attendeesCount * 0.25) {
+        reportsColor = Colors.green;
+      } else if (reportsCount < attendeesCount * 0.66) {
+        reportsColor = Colors.yellow;
+      } else {
+        reportsColor = Colors.red;
+      }
+      
+      Event event = Event(
+        id: item['id'],
+        name: item['name'],
+        status: item['status'],
+        organizerEmail: organizer['email'],
+        reportsCount: reportsCount, // Pass the reports count to the model
+        reportsColor: reportsColor,
+        report: reports, // Pass the reports color to the model
+      );
+      return  Event(
+        id: item['id'],
+        name: item['name'],
+        status: item['status'],
+        organizerEmail: organizer['email'],
+        reportsCount: reportsCount, // Pass the reports count to the model
+        reportsColor: reportsColor,
+        report: reports, // Pass the reports color to the model
+      );
+    }).toList();
+  }
 
   DataRow recentFileDataRow(Event fileInfo, BuildContext context) {
     void showConfirmationPopup(Event fileInfo) {
@@ -254,42 +281,49 @@ Future<List<Event>> fetchEvents(int organizationId) async {
       );
     }
 
-    return  DataRow(
-    cells: [
-      DataCell(
-        Text(fileInfo.id.toString()),
-      ),
-      DataCell(
-        Text(fileInfo.name),
-      ),
-      DataCell(Text(fileInfo.organizerEmail)),
-      DataCell(Text(fileInfo.status)),
-       DataCell(
-      GestureDetector(
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EventReportsScreen(event: fileInfo),
-      ),
-    );
-  },
-  child: Text(
-    fileInfo.reportsCount.toString(),
-    style: TextStyle(color: fileInfo.reportsColor),
-  ),
-),
-
-      ),
-      DataCell(
-        IconButton(
-          icon: Icon(Icons.close),
-          onPressed: () => showConfirmationPopup(fileInfo),
+    return DataRow(
+      cells: [
+        DataCell(
+          Text(fileInfo.id.toString()),
         ),
-      ),
-     
-    ],
-  );
+        DataCell(
+          Text(fileInfo.name),
+        ),
+        DataCell(Text(fileInfo.organizerEmail)),
+        DataCell(Text(fileInfo.status)),
+        DataCell(
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventReportsScreen(event: fileInfo),
+                ),
+              );
+            },
+            child: Text(
+              fileInfo.reportsCount.toString(),
+              style: TextStyle(color: fileInfo.reportsColor),
+            ),
+          ),
+        ),
+        fileInfo.rate == null || fileInfo.rate == 0
+            ? DataCell(Text('Not rated'))
+            : DataCell(
+                Text(
+                  fileInfo.rate
+                      .toStringAsFixed(2), // Format to two decimal places
+                  style: TextStyle(
+                    color: fileInfo.rate < 3
+                        ? Colors.red
+                        : fileInfo.rate < 4
+                            ? Colors.yellow
+                            : Colors.green,
+                  ),
+                ),
+              ),
+      ],
+    );
   }
 
   Future<void> sendEmail(String recipientEmail, String emailText) async {

@@ -1,5 +1,6 @@
 import 'package:admin/constants.dart';
 import 'package:admin/controllers/MenuAppController.dart';
+import 'package:admin/screens/access_denied.dart';
 import 'package:admin/screens/main/main_screen.dart';
 import 'package:admin/screens/signin.dart';
 import 'package:flutter/material.dart';
@@ -30,8 +31,18 @@ class MyApp extends StatelessWidget {
             create: (context) => MenuAppController(),
           ),
         ],
-        child: MainScreen(),
-      ),
+        child: SignIn(),
+      ),    onGenerateRoute: (settings) {
+              var routes = {
+               
+                "/main_screen": (context) => MainScreen(),
+                "/signin": (context) => SignIn(),
+                "/access": (context) => AccessDeniedScreen(),
+
+              };
+              WidgetBuilder builder = routes[settings.name]!;
+              return MaterialPageRoute(builder: (ctx) => builder(ctx));
+            },
     );
   }
 }

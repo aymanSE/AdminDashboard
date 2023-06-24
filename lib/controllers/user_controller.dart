@@ -1,6 +1,5 @@
 import 'dart:developer';
 
- 
 import 'dart:convert';
 import '../models/Users_Model.dart';
 import 'api_helper.dart';
@@ -26,10 +25,9 @@ class UserController {
     User result = User.fromJson(jsonObject);
     String type = jsonObject["type"];
     String token = jsonObject["token"];
-     
+
     return result;
   }
- 
 
   Future<void> distroy(int id) async {
     dynamic jsonObject = await ApiHelper().delete("$path$id/");
@@ -47,8 +45,8 @@ class UserController {
       print("passed");
       String type = jsonObject["type"];
       String token = jsonObject["token"];
-       
-      
+      ApiHelper.token = "$type $token";
+
       return true;
     } catch (ex) {
       print(ex);
@@ -60,9 +58,7 @@ class UserController {
     try {
       print(path);
       dynamic jsonObject = await ApiHelper().post("${path}logout/${id}");
-     
 
-      
       return true;
     } catch (ex) {
       print(ex);

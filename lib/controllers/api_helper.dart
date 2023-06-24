@@ -2,19 +2,26 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
- 
-class ApiHelper {
-  String domain = "192.168.8.120:3333"; 
- 
- String gmailUsername = 'clustevents@gmail.com';
- String gmailPassword = 'ovqsvecbocresybx';
-  Future get(String path) async {
-    Uri uri = Uri.http(domain, path);
-     var response = await http.get(uri);
-    return responsing(response);
- 
-   }
 
+class ApiHelper {
+  String domain = "192.168.100.45:61032";
+static String token = ""; 
+ String gmailUsername = 'clustevents@gmail.com';
+  String gmailPassword = 'ovqsvecbocresybx';
+  Future get(String path,{body}) async {
+    Uri uri = Uri.http(domain, path);
+    var headers = {"Authorization": token};
+
+    var response = await http.get(uri,headers: headers);
+    return responsing(response);
+  }
+  Future getRate(String path,{body}) async {
+    Uri uri = Uri.http(domain, path,body);
+    var headers = {"Authorization": token};
+
+    var response = await http.get(uri,headers: headers);
+    return responsing(response);
+  }
   Future post(String path, {body}) async {
     print(body.toString());
     Uri uri = Uri.http(domain, path);
@@ -22,9 +29,9 @@ class ApiHelper {
     return responsing(response);
   }
 
-  Future put(String path ) async {
+  Future put(String path) async {
     Uri uri = Uri.http(domain, path);
-    var response = await http.put(uri );
+    var response = await http.put(uri);
     return responsing(response);
   }
 
@@ -33,7 +40,7 @@ class ApiHelper {
     var response = await http.delete(uri);
     return responsing(response);
   }
- 
+
   responsing(http.Response response) {
     switch (response.statusCode) {
       case 200:
